@@ -1,0 +1,1 @@
+resources/connect-standalone.sh resources/connect-standalone.properties resources/connect-console-sink.properties
