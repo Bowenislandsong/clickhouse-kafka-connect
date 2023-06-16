@@ -21,12 +21,12 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_INTERNAL://broker:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 3
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
   connector:
-    image: confluent_connector:latest  # hub.tess.io/bowsong/kafka-clickhouse-connector:latest
+    image: hub.tess.io/bowsong/connector:latest #connector:latest #
     container_name: connector
     ports:
       - "8123:8123"
@@ -40,29 +40,42 @@ services:
       CONNECT_CONFIG_STORAGE_TOPIC: _connect-configs
       CONNECT_OFFSET_STORAGE_TOPIC: _connect-offsets
       CONNECT_STATUS_STORAGE_TOPIC: _connect-status
-      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 3 
-      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 3
-      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 3
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
       CONNECT_REST_ADVERTISED_HOST_NAME: connector
-      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/usr/share/connectors"
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/connectors,/usr/share/connectors/clickhouse-kafka-connect-v0.0.13-beta-all.jar"
+      KEEPER_MAP_PATH_PREFIX: /keeper_map_tables
     command:
       - bash
       - -c
       - |
         echo "Launching Kafka Connect worker"
+        sleep 20
         /etc/confluent/docker/run &
-        #
+        bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8083)" != "200" ]]; do sleep 5; done'
+        curl -s -X PUT -H  "Content-Type:application/json" http://localhost:8083/connectors/kafka-clickhouse/config \
+            -d '{
+            "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
+            "tasks.max": 1,
+            "topics": "connect-test,github",
+            "hostname": "clickhouse",
+            "port": 8123,
+            "exactlyOnce": true
+        }'
         sleep infinity
 
   clickhouse-server:
-    container_name: clickhouse-server
+    container_name: clickhouse
     image: clickhouse/clickhouse-server:latest # replace for ebay's hub.tess.io/nudata/clickhouse-server:23.4.2.11
     expose:
       - 8123,9000
+    volumes:
+      - ./deploy/dev_distributed/clickhouse-server-config.xml:/etc/clickhouse-server/config.xml
     depends_on:
       - zookeeper-clickhouse
 
