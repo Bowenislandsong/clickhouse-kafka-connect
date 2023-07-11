@@ -21,6 +21,7 @@ java {
 
 buildscript {
     repositories {
+        maven("https://ebaycentral.qa.ebay.com/content/repositories/central")
         mavenCentral()
     }
 }
@@ -30,9 +31,9 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-   // checkstyle
+    // checkstyle
     id("com.github.gmazzo.buildconfig") version "3.0.3"
-    //id("com.github.spotbugs") version "4.7.9"
+    // id("com.github.spotbugs") version "4.7.9"
     id("com.diffplug.spotless") version "5.17.1"
     id("com.github.johnrengelman.shadow") version "6.1.0"
 }
@@ -42,6 +43,7 @@ version = file("VERSION").readText().trim()
 description = "The official ClickHouse Apache Kafka Connect Connector."
 
 repositories {
+    maven("https://ebaycentral.qa.ebay.com/content/repositories/central")
     mavenCentral()
     maven("https://packages.confluent.io/maven/")
     maven("https://jitpack.io")

@@ -1,0 +1,1 @@
+docker build -f standalone.Dockerfile -t connector:latest . 
