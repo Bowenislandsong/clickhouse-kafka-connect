@@ -11,8 +11,6 @@ services:
     image: confluentinc/cp-kafka:7.3.2 # replace for ebay's hub.tess.io/rheos/kafka:2.5.1
     container_name: broker
     ports:
-    # To learn about configuring Kafka for access across networks see
-    # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
       - "9092:9092"
     depends_on:
       - zookeeper-kafka
@@ -75,6 +73,7 @@ services:
       - 8123,9000
     volumes:
       - ./deploy/dev_distributed/clickhouse-server-config.xml:/etc/clickhouse-server/config.xml
+      - ./deploy/dev_distributed/clickhouse-init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     depends_on:
       - zookeeper-clickhouse
 
