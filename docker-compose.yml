@@ -24,7 +24,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
 
   connector:
-    image: hub.tess.io/bowsong/connector:latest #connector:latest #
+    image: connector:latest #hub.tess.io/bowsong/connector:latest
     container_name: connector
     ports:
       - "8123:8123"

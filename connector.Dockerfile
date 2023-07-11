@@ -10,4 +10,4 @@ ENV APP_HOME=/usr/app/
 
 COPY --from=BUILDER ${APP_HOME}build/libs/$ARTIFACT_NAME /usr/share/connectors/
 
-ENV CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components,/usr/share/connectors"
+ENV CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/connectors"
