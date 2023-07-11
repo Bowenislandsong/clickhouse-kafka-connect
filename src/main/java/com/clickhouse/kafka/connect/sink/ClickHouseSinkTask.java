@@ -62,6 +62,9 @@ public class ClickHouseSinkTask extends SinkTask {
                     }
                 }
             }
+            if (this.numConnections==0){
+                throw new ConnectException("Failed to start new task, no connection is available from shards: "+clickHouseSinkConfig.getShardsRaw());
+            }
         } else {
             this.proxySinkTasks.add(new ProxySinkTask(clickHouseSinkConfig, createErrorReporter()));
             this.numConnections = 1;
